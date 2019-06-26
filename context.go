@@ -158,3 +158,7 @@ func (c *Context) GetStringMapString(key string) (sms map[string]string) {
 	}
 	return
 }
+
+func (c *Context) GetValues() map[string]interface{} {
+	return c.values
+}
