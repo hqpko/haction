@@ -4,15 +4,15 @@ import (
 	"sync"
 )
 
-type handleAction func(*Context)
+type HandleAction func(*Context)
 
 type actionHandler struct {
 	id     int32
-	handle handleAction
+	handle HandleAction
 	owner  *Group
 }
 
-func newAction(id int32, handle handleAction, owner *Group) *actionHandler {
+func newAction(id int32, handle HandleAction, owner *Group) *actionHandler {
 	return &actionHandler{id: id, handle: handle, owner: owner}
 }
 
@@ -30,9 +30,9 @@ type Group struct {
 	sync.RWMutex
 	parent *Group
 
-	beforeMiddleWare []handleAction
+	beforeMiddleWare []HandleAction
 	actionHandlers   map[int32]*actionHandler
-	afterMiddleWare  []handleAction
+	afterMiddleWare  []HandleAction
 }
 
 func NewGroup() *Group {
@@ -47,22 +47,22 @@ func (g *Group) Register(id int32, handler func(ctx *Context)) {
 	g.register(newAction(id, handler, g))
 }
 
-func (g *Group) AddBeforeMiddleWare(handler func(ctx *Context)) {
+func (g *Group) AddBeforeMiddleWare(handlers ...HandleAction) {
 	g.Lock()
 	g.Unlock()
 	if g.beforeMiddleWare == nil {
-		g.beforeMiddleWare = make([]handleAction, 0)
+		g.beforeMiddleWare = make([]HandleAction, 0)
 	}
-	g.beforeMiddleWare = append(g.beforeMiddleWare, handler)
+	g.beforeMiddleWare = append(g.beforeMiddleWare, handlers...)
 }
 
-func (g *Group) AddAfterMiddleWare(handler func(ctx *Context)) {
+func (g *Group) AddAfterMiddleWare(handlers ...HandleAction) {
 	g.Lock()
 	g.Unlock()
 	if g.afterMiddleWare == nil {
-		g.afterMiddleWare = make([]handleAction, 0)
+		g.afterMiddleWare = make([]HandleAction, 0)
 	}
-	g.afterMiddleWare = append(g.afterMiddleWare, handler)
+	g.afterMiddleWare = append(g.afterMiddleWare, handlers...)
 }
 
 func (g *Group) register(action *actionHandler) {
@@ -101,7 +101,7 @@ func (g *Group) doAfter(ctx *Context) {
 	}
 }
 
-func (g *Group) doHandlers(ctx *Context, handlers []handleAction) {
+func (g *Group) doHandlers(ctx *Context, handlers []HandleAction) {
 	if ctx.isAbort() {
 		return
 	}
