@@ -61,6 +61,10 @@ func (c *Context) Get(key string) (value interface{}, exists bool) {
 	return
 }
 
+func (c *Context) MustGet(key string) interface{} {
+	return c.values[key]
+}
+
 func (c *Context) GetString(key string) (s string) {
 	if v, ok := c.Get(key); ok && v != nil {
 		s, _ = v.(string)
