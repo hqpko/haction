@@ -40,7 +40,7 @@ func (c *Channel) AddAfterMiddleWare(handler func(ctx *Context)) {
 	c.group.AddAfterMiddleWare(handler)
 }
 
-func (c *Channel) Group() *Group {
+func (c *Channel) Group() IGroup {
 	return c.group.Group()
 }
 
