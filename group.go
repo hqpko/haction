@@ -28,9 +28,9 @@ func (a *actionHandler) do(ctx *Context) {
 
 type IGroup interface {
 	Group() IGroup
-	AddBeforeMiddleWare(handlers ...HandleAction)
-	AddAfterMiddleWare(handlers ...HandleAction)
-	Register(id int32, handler func(ctx *Context))
+	AddBeforeMiddleWare(handlers ...HandleAction) IGroup
+	AddAfterMiddleWare(handlers ...HandleAction) IGroup
+	Register(id int32, handler func(ctx *Context)) IGroup
 
 	doBefore(ctx *Context)
 	doAfter(ctx *Context)
@@ -78,26 +78,29 @@ func (g *group) Group() IGroup {
 	return newGroup(g, g.root)
 }
 
-func (g *group) Register(id int32, handler func(ctx *Context)) {
+func (g *group) Register(id int32, handler func(ctx *Context)) IGroup {
 	g.root.register(newAction(id, handler, g))
+	return g
 }
 
-func (g *group) AddBeforeMiddleWare(handlers ...HandleAction) {
+func (g *group) AddBeforeMiddleWare(handlers ...HandleAction) IGroup {
 	g.Lock()
 	g.Unlock()
 	if g.beforeMiddleWare == nil {
 		g.beforeMiddleWare = make([]HandleAction, 0)
 	}
 	g.beforeMiddleWare = append(g.beforeMiddleWare, handlers...)
+	return g
 }
 
-func (g *group) AddAfterMiddleWare(handlers ...HandleAction) {
+func (g *group) AddAfterMiddleWare(handlers ...HandleAction) IGroup {
 	g.Lock()
 	g.Unlock()
 	if g.afterMiddleWare == nil {
 		g.afterMiddleWare = make([]HandleAction, 0)
 	}
 	g.afterMiddleWare = append(g.afterMiddleWare, handlers...)
+	return g
 }
 
 func (g *group) doBefore(ctx *Context) {

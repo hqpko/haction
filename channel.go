@@ -24,20 +24,21 @@ func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
 	return c
 }
 
-func (c *Channel) Start() {
+func (c *Channel) Start() *Channel {
 	c.mainChannel.Start()
+	return c
 }
 
-func (c *Channel) Register(id int32, handler func(ctx *Context)) {
-	c.group.Register(id, handler)
+func (c *Channel) Register(id int32, handler func(ctx *Context)) IGroup {
+	return c.group.Register(id, handler)
 }
 
-func (c *Channel) AddBeforeMiddleWare(handler func(ctx *Context)) {
-	c.group.AddBeforeMiddleWare(handler)
+func (c *Channel) AddBeforeMiddleWare(handler func(ctx *Context)) IGroup {
+	return c.group.AddBeforeMiddleWare(handler)
 }
 
-func (c *Channel) AddAfterMiddleWare(handler func(ctx *Context)) {
-	c.group.AddAfterMiddleWare(handler)
+func (c *Channel) AddAfterMiddleWare(handler func(ctx *Context)) IGroup {
+	return c.group.AddAfterMiddleWare(handler)
 }
 
 func (c *Channel) Group() IGroup {
