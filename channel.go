@@ -1,13 +1,10 @@
 package haction
 
 import (
-	"sync"
-
 	"github.com/hqpko/hconcurrent"
 )
 
 type Channel struct {
-	pool        sync.Pool
 	group       *Group
 	mainChannel *hconcurrent.Concurrent
 }
@@ -17,10 +14,13 @@ func NewChannel() *Channel {
 }
 
 func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
-	c := &Channel{group: NewGroup(), pool: sync.Pool{New: func() interface{} {
-		return NewContext(0)
-	}}}
+	c := &Channel{group: NewGroup().SetContextPool(NewContextPool())}
 	c.mainChannel = hconcurrent.NewConcurrent(channelSize, goroutineCount, c.doAction)
+	return c
+}
+
+func (c *Channel) SetContextPool(pool *ContextPool) *Channel {
+	c.group.SetContextPool(pool)
 	return c
 }
 
@@ -59,14 +59,7 @@ func (c *Channel) doAction(i interface{}) interface{} {
 }
 
 func (c *Channel) GetContext(id int32) *Context {
-	ctx := c.pool.Get().(*Context)
-	ctx.SetID(id)
-	return ctx
-}
-
-func (c *Channel) putContext(ctx *Context) {
-	ctx.Reset()
-	c.pool.Put(ctx)
+	return c.group.pool.Get(id)
 }
 
 func (c *Channel) Stop() {

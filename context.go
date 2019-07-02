@@ -1,8 +1,30 @@
 package haction
 
 import (
+	"sync"
 	"time"
 )
+
+type ContextPool struct {
+	pool sync.Pool
+}
+
+func NewContextPool() *ContextPool {
+	return &ContextPool{pool: sync.Pool{New: func() interface{} {
+		return NewContext(0)
+	}}}
+}
+
+func (cp *ContextPool) Get(id int32) *Context {
+	return cp.pool.Get().(*Context).SetID(id)
+}
+
+func (cp *ContextPool) Put(ctx *Context) {
+	if ctx != nil {
+		ctx.reset()
+		cp.pool.Put(ctx)
+	}
+}
 
 type Context struct {
 	id     int32
@@ -32,7 +54,7 @@ func (c *Context) isAbort() bool {
 	return c.abort || c.error != nil
 }
 
-func (c *Context) Reset() {
+func (c *Context) reset() {
 	c.id = 0
 	c.values = nil
 	c.abort = false

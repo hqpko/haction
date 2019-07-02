@@ -38,6 +38,7 @@ type IGroup interface {
 
 type Group struct {
 	*group
+	pool           *ContextPool
 	actionHandlers map[int32]*actionHandler
 }
 
@@ -47,11 +48,20 @@ func NewGroup() *Group {
 	return g
 }
 
+func (g *Group) SetContextPool(pool *ContextPool) *Group {
+	g.pool = pool
+	return g
+}
+
+// Do 如果设置了 contextPool，则会自动回收
 func (g *Group) Do(ctx *Context) {
 	g.RLock()
 	g.RUnlock()
 	if action := g.actionHandlers[ctx.id]; action != nil {
 		action.do(ctx)
+	}
+	if g.pool != nil {
+		g.pool.Put(ctx)
 	}
 }
 
