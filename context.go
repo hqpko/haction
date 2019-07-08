@@ -87,6 +87,16 @@ func (c *Context) MustGet(key string) interface{} {
 	return c.values[key]
 }
 
+func (c *Context) Copy(from *Context) *Context {
+	if c.values == nil {
+		c.values = make(map[string]interface{})
+	}
+	for k, v := range from.values {
+		c.values[k] = v
+	}
+	return c
+}
+
 func (c *Context) GetString(key string) (s string) {
 	if v, ok := c.Get(key); ok && v != nil {
 		s, _ = v.(string)
