@@ -40,10 +40,16 @@ func main() {
 	// before	: rootBeforeMiddleWare01 -> rootBeforeMiddleWare02 -> subBeforeMiddleWare01 -> subBeforeMiddleWare02 ->
 	// register	: handler03 ->
 	// after	: subAfterMiddleWare01 -> subAfterMiddleWare02 -> rootAfterMiddleWare01 -> rootAfterMiddleWare02
-	ctx := root.GetContext(3).Set("value", "123")
-	root.Input(ctx)
+	
+	// 执行顺序
+	// before	: rootBeforeMiddleWare01 -> rootBeforeMiddleWare02 -> subBeforeMiddleWare01 -> subBeforeMiddleWare02 ->
+	// register	: handler03 ->
+	// after	: subAfterMiddleWare01 -> subAfterMiddleWare02 -> rootAfterMiddleWare01 -> rootAfterMiddleWare02
+	root.Input(3, haction.Values{
+		"value": "123",
+	})
 
-	// Group 类似于 Channel，只是入口是 Group.Do(ctx)，同步执行，而不是 Channel.Input(ctx)，异步执行
+	// Group 类似于 Channel，只是入口是 Group.Do(pid, values)，同步执行，而不是 Channel.Input(pid, values)，异步执行
 }
 
 ```
