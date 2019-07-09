@@ -25,19 +25,19 @@ func TestGroup(t *testing.T) {
 		}
 	}
 
-	root.Do(NewContext(1))
+	root.Do(1, nil)
 	if count != 3 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Do(NewContext(2))
+	root.Do(2, nil)
 	if count != 4 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Do(NewContext(3))
+	root.Do(3, nil)
 	if count != 5 {
 		t.Errorf("action group do fail")
 	}

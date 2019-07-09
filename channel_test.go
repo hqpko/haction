@@ -28,21 +28,21 @@ func TestActionChannel(t *testing.T) {
 	}
 	root.Start()
 
-	root.Input(root.GetContext(1))
+	root.Input(1, nil)
 	time.Sleep(100 * time.Millisecond)
 	if atomic.LoadInt32(&count) != 3 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Input(root.GetContext(2))
+	root.Input(2, nil)
 	time.Sleep(100 * time.Millisecond)
 	if atomic.LoadInt32(&count) != 4 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Input(root.GetContext(3))
+	root.Input(3, nil)
 	time.Sleep(100 * time.Millisecond)
 	if atomic.LoadInt32(&count) != 5 {
 		t.Errorf("action group do fail")

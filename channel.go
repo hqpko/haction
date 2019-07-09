@@ -45,20 +45,23 @@ func (c *Channel) Group() IGroup {
 	return c.group.Group()
 }
 
-func (c *Channel) Input(ctx *Context) bool {
-	return c.mainChannel.Input(ctx)
+func (c *Channel) Input(pid int32, values Values) bool {
+	return c.mainChannel.Input(c.getContext(pid).SetValues(values))
 }
 
-func (c *Channel) MustInput(ctx *Context) {
-	c.mainChannel.MustInput(ctx)
+func (c *Channel) MustInput(pid int32, values Values) {
+	c.mainChannel.MustInput(c.getContext(pid).SetValues(values))
 }
 
 func (c *Channel) doAction(i interface{}) interface{} {
-	c.group.Do(i.(*Context))
+	if ctx, ok := i.(*Context); ok {
+		c.group.do(ctx)
+		c.group.pool.Put(ctx)
+	}
 	return nil
 }
 
-func (c *Channel) GetContext(id int32) *Context {
+func (c *Channel) getContext(id int32) *Context {
 	return c.group.pool.Get(id)
 }
 

@@ -43,7 +43,7 @@ type Group struct {
 }
 
 func NewGroup() *Group {
-	g := &Group{actionHandlers: map[int32]*actionHandler{}}
+	g := &Group{actionHandlers: map[int32]*actionHandler{}, pool: NewContextPool()}
 	g.group = newGroup(nil, g)
 	return g
 }
@@ -54,14 +54,18 @@ func (g *Group) SetContextPool(pool *ContextPool) *Group {
 }
 
 // Do 如果设置了 contextPool，则会自动回收
-func (g *Group) Do(ctx *Context) {
+func (g *Group) Do(pid int32, values Values) {
+	ctx := g.pool.Get(pid).SetValues(values)
+	defer g.pool.Put(ctx)
+
+	g.do(ctx)
+}
+
+func (g *Group) do(ctx *Context) {
 	g.RLock()
 	g.RUnlock()
 	if action := g.actionHandlers[ctx.id]; action != nil {
 		action.do(ctx)
-	}
-	if g.pool != nil {
-		g.pool.Put(ctx)
 	}
 }
 

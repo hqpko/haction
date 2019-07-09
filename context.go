@@ -26,9 +26,11 @@ func (cp *ContextPool) Put(ctx *Context) {
 	}
 }
 
+type Values map[string]interface{}
+
 type Context struct {
 	id     int32
-	values map[string]interface{}
+	values Values
 
 	abort bool
 	error error
@@ -75,6 +77,11 @@ func (c *Context) Set(key string, value interface{}) *Context {
 		c.values = make(map[string]interface{})
 	}
 	c.values[key] = value
+	return c
+}
+
+func (c *Context) SetValues(values Values) *Context {
+	c.values = values
 	return c
 }
 
@@ -195,6 +202,6 @@ func (c *Context) GetStringMapString(key string) (sms map[string]string) {
 	return
 }
 
-func (c *Context) GetValues() map[string]interface{} {
+func (c *Context) GetValues() Values {
 	return c.values
 }
