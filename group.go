@@ -38,6 +38,7 @@ type IGroup interface {
 
 type Group struct {
 	*group
+	lock           sync.RWMutex
 	pool           *ContextPool
 	actionHandlers map[int32]*actionHandler
 }
@@ -62,21 +63,21 @@ func (g *Group) Do(pid int32, values Values) {
 }
 
 func (g *Group) do(ctx *Context) {
-	g.RLock()
-	g.RUnlock()
+	g.lock.RLock()
+	defer g.lock.RUnlock()
 	if action := g.actionHandlers[ctx.id]; action != nil {
 		action.do(ctx)
 	}
 }
 
 func (g *Group) register(action *actionHandler) {
-	g.Lock()
-	g.Unlock()
+	g.lock.Lock()
+	defer g.lock.Unlock()
 	g.actionHandlers[action.id] = action
 }
 
 type group struct {
-	sync.RWMutex
+	lock   sync.RWMutex
 	parent IGroup
 	root   *Group
 
@@ -98,8 +99,8 @@ func (g *group) Register(id int32, handler func(ctx *Context)) IGroup {
 }
 
 func (g *group) AddBeforeMiddleWare(handlers ...HandleAction) IGroup {
-	g.Lock()
-	g.Unlock()
+	g.lock.Lock()
+	defer g.lock.Unlock()
 	if g.beforeMiddleWare == nil {
 		g.beforeMiddleWare = make([]HandleAction, 0)
 	}
@@ -108,8 +109,8 @@ func (g *group) AddBeforeMiddleWare(handlers ...HandleAction) IGroup {
 }
 
 func (g *group) AddAfterMiddleWare(handlers ...HandleAction) IGroup {
-	g.Lock()
-	g.Unlock()
+	g.lock.Lock()
+	defer g.lock.Unlock()
 	if g.afterMiddleWare == nil {
 		g.afterMiddleWare = make([]HandleAction, 0)
 	}
