@@ -29,20 +29,8 @@ func (c *Channel) Start() *Channel {
 	return c
 }
 
-func (c *Channel) Register(id int32, handler func(ctx *Context)) IGroup {
-	return c.group.Register(id, handler)
-}
-
-func (c *Channel) AddBeforeMiddleWare(handler func(ctx *Context)) IGroup {
-	return c.group.AddBeforeMiddleWare(handler)
-}
-
-func (c *Channel) AddAfterMiddleWare(handler func(ctx *Context)) IGroup {
-	return c.group.AddAfterMiddleWare(handler)
-}
-
 func (c *Channel) Group() IGroup {
-	return c.group.Group()
+	return c.group
 }
 
 func (c *Channel) Input(pid int32, values Values) bool {
