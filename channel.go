@@ -29,8 +29,8 @@ func (c *Channel) Start() *Channel {
 	return c
 }
 
-func (c *Channel) Group() IGroup {
-	return c.group
+func (c *Channel) Root() IGroup {
+	return c.group.Root()
 }
 
 func (c *Channel) Input(pid int32, values Values) bool {

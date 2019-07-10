@@ -11,7 +11,7 @@ func TestActionChannel(t *testing.T) {
 	handlerAddCount := func(ctx *Context) { atomic.AddInt32(&count, 1) }
 
 	channel := NewChannel()
-	rootGroup := channel.Group()
+	rootGroup := channel.Root()
 	rootGroup.AddBeforeMiddleWare(handlerAddCount)
 	rootGroup.AddAfterMiddleWare(handlerAddCount)
 	rootGroup.Register(1, handlerAddCount)

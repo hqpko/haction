@@ -37,7 +37,7 @@ type IGroup interface {
 }
 
 type Group struct {
-	*group
+	root           *group
 	lock           sync.RWMutex
 	pool           *ContextPool
 	actionHandlers map[int32]*actionHandler
@@ -45,13 +45,17 @@ type Group struct {
 
 func NewGroup() *Group {
 	g := &Group{actionHandlers: map[int32]*actionHandler{}, pool: NewContextPool()}
-	g.group = newGroup(nil, g)
+	g.root = newGroup(nil, g)
 	return g
 }
 
 func (g *Group) SetContextPool(pool *ContextPool) *Group {
 	g.pool = pool
 	return g
+}
+
+func (g *Group) Root() IGroup {
+	return g.root
 }
 
 // Do 如果设置了 contextPool，则会自动回收

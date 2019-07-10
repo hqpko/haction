@@ -8,7 +8,8 @@ func TestGroup(t *testing.T) {
 	count := 0
 	handlerAddCount := func(ctx *Context) { count++ }
 
-	root := NewGroup()
+	group := NewGroup()
+	root := group.Root()
 	root.AddBeforeMiddleWare(handlerAddCount)
 	root.AddAfterMiddleWare(handlerAddCount)
 	root.Register(1, handlerAddCount)
@@ -25,19 +26,19 @@ func TestGroup(t *testing.T) {
 		}
 	}
 
-	root.Do(1, nil)
+	group.Do(1, nil)
 	if count != 3 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Do(2, nil)
+	group.Do(2, nil)
 	if count != 4 {
 		t.Errorf("action group do fail")
 	}
 
 	count = 0
-	root.Do(3, nil)
+	group.Do(3, nil)
 	if count != 5 {
 		t.Errorf("action group do fail")
 	}
