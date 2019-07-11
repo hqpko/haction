@@ -15,7 +15,8 @@ import (
 )
 
 func main() {
-	root := haction.NewChannelWithOption(1024, 1)
+	channel := haction.NewChannelWithOption(1024, 1)
+	root := channel.Root()
 	root.AddBeforeMiddleWare(rootBeforeMiddleWare01, rootBeforeMiddleWare02)
 	root.Register(1, handler01)
 
@@ -40,12 +41,12 @@ func main() {
 	// before	: rootBeforeMiddleWare01 -> rootBeforeMiddleWare02 -> subBeforeMiddleWare01 -> subBeforeMiddleWare02 ->
 	// register	: handler03 ->
 	// after	: subAfterMiddleWare01 -> subAfterMiddleWare02 -> rootAfterMiddleWare01 -> rootAfterMiddleWare02
-	
+
 	// 执行顺序
 	// before	: rootBeforeMiddleWare01 -> rootBeforeMiddleWare02 -> subBeforeMiddleWare01 -> subBeforeMiddleWare02 ->
 	// register	: handler03 ->
 	// after	: subAfterMiddleWare01 -> subAfterMiddleWare02 -> rootAfterMiddleWare01 -> rootAfterMiddleWare02
-	root.Input(3, haction.Values{
+	channel.Input(3, haction.Values{
 		"value": "123",
 	})
 
