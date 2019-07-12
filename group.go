@@ -60,7 +60,6 @@ func (g *Group) Root() IGroup {
 	return g.root
 }
 
-// Do 如果设置了 contextPool，则会自动回收
 func (g *Group) Do(pid int32, values Values) {
 	ctx := g.pool.Get(pid).SetValues(values)
 	defer g.pool.Put(ctx)
