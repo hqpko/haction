@@ -20,7 +20,9 @@ func (a *actionHandler) do(ctx *Context) {
 	if a.owner != nil {
 		a.owner.doBefore(ctx)
 		if !ctx.isAbort() {
-			a.handle(ctx)
+			if a.handle != nil {
+				a.handle(ctx)
+			}
 			a.owner.doAfter(ctx)
 		}
 	}
