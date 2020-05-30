@@ -1,12 +1,12 @@
 package haction
 
 import (
-	"github.com/hqpko/hconcurrent"
+	"github.com/hqpko/hchannel"
 )
 
 type Channel struct {
 	group       *Group
-	mainChannel *hconcurrent.Concurrent
+	mainChannel *hchannel.Channel
 }
 
 func NewChannel() *Channel {
@@ -15,7 +15,7 @@ func NewChannel() *Channel {
 
 func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
 	c := &Channel{group: NewGroup().SetContextPool(NewContextPool())}
-	c.mainChannel = hconcurrent.NewConcurrent(channelSize, goroutineCount, c.doAction)
+	c.mainChannel = hchannel.NewChannelMulti(channelSize, goroutineCount, c.doAction)
 	return c
 }
 
@@ -25,7 +25,7 @@ func (c *Channel) SetContextPool(pool *ContextPool) *Channel {
 }
 
 func (c *Channel) Start() *Channel {
-	c.mainChannel.Start()
+	c.mainChannel.Run()
 	return c
 }
 
@@ -37,16 +37,11 @@ func (c *Channel) Input(pid int32, values Values) bool {
 	return c.mainChannel.Input(c.getContext(pid).SetValues(values))
 }
 
-func (c *Channel) MustInput(pid int32, values Values) {
-	c.mainChannel.MustInput(c.getContext(pid).SetValues(values))
-}
-
-func (c *Channel) doAction(i interface{}) interface{} {
+func (c *Channel) doAction(i interface{}) {
 	if ctx, ok := i.(*Context); ok {
 		c.group.do(ctx)
 		c.group.pool.Put(ctx)
 	}
-	return nil
 }
 
 func (c *Channel) getContext(id int32) *Context {
@@ -54,5 +49,5 @@ func (c *Channel) getContext(id int32) *Context {
 }
 
 func (c *Channel) Stop() {
-	c.mainChannel.Stop()
+	c.mainChannel.Close()
 }
