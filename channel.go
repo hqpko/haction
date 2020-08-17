@@ -5,7 +5,7 @@ import (
 )
 
 type Channel struct {
-	group       *Group
+	engine      *Engine
 	mainChannel *hchannel.Channel
 }
 
@@ -14,13 +14,8 @@ func NewChannel() *Channel {
 }
 
 func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
-	c := &Channel{group: NewGroup().SetContextPool(NewContextPool())}
+	c := &Channel{engine: NewEngine()}
 	c.mainChannel = hchannel.NewChannelMulti(channelSize, goroutineCount, c.doAction)
-	return c
-}
-
-func (c *Channel) SetContextPool(pool *ContextPool) *Channel {
-	c.group.SetContextPool(pool)
 	return c
 }
 
@@ -30,22 +25,17 @@ func (c *Channel) Start() *Channel {
 }
 
 func (c *Channel) Root() IGroup {
-	return c.group.Root()
+	return c.engine
 }
 
 func (c *Channel) Input(pid int32, values Values) bool {
-	return c.mainChannel.Input(c.getContext(pid).SetValues(values))
+	return c.mainChannel.Input(c.engine.newContext(pid, values))
 }
 
 func (c *Channel) doAction(i interface{}) {
 	if ctx, ok := i.(*Context); ok {
-		c.group.do(ctx)
-		c.group.pool.Put(ctx)
+		ctx.do()
 	}
-}
-
-func (c *Channel) getContext(id int32) *Context {
-	return c.group.pool.Get(id)
 }
 
 func (c *Channel) Stop() {

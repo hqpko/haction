@@ -1,87 +1,42 @@
 package haction
 
 import (
-	"sync"
 	"time"
 )
-
-type ContextPool struct {
-	pool sync.Pool
-}
-
-func NewContextPool() *ContextPool {
-	return &ContextPool{pool: sync.Pool{New: func() interface{} {
-		return NewContext(0)
-	}}}
-}
-
-func (cp *ContextPool) Get(id int32) *Context {
-	return cp.pool.Get().(*Context).SetID(id)
-}
-
-func (cp *ContextPool) Put(ctx *Context) {
-	if ctx != nil {
-		ctx.reset()
-		cp.pool.Put(ctx)
-	}
-}
 
 type Values map[string]interface{}
 
 type Context struct {
-	id     int32
-	values Values
-
-	abort bool
-	error error
+	id       int32
+	index    int
+	values   Values
+	handlers []HandleAction
 }
 
-func NewContext(id int32) *Context {
-	return &Context{id: id}
+func newContext(id int32, values Values, handlers []HandleAction) *Context {
+	return &Context{id: id, values: values, handlers: handlers}
 }
 
 func (c *Context) Abort() {
-	c.abort = true
+	c.index = len(c.handlers)
 }
 
-func (c *Context) SetError(e error) {
-	c.error = e
+func (c *Context) Next() {
+	c.index++
+	if c.index < len(c.handlers) {
+		c.handlers[c.index](c)
+	}
 }
 
-func (c *Context) GetError(e error) error {
-	return c.error
-}
-
-func (c *Context) isAbort() bool {
-	return c.abort || c.error != nil
-}
-
-func (c *Context) reset() {
-	c.id = 0
-	c.values = nil
-	c.abort = false
-	c.error = nil
-}
-
-func (c *Context) SetID(id int32) *Context {
-	c.id = id
-	return c
-}
-
-func (c *Context) GetID() int32 {
-	return c.id
+func (c *Context) do() {
+	for c.index < len(c.handlers) {
+		c.handlers[c.index](c)
+		c.index++
+	}
 }
 
 func (c *Context) Set(key string, value interface{}) *Context {
-	if c.values == nil {
-		c.values = make(map[string]interface{})
-	}
 	c.values[key] = value
-	return c
-}
-
-func (c *Context) SetValues(values Values) *Context {
-	c.values = values
 	return c
 }
 
@@ -92,16 +47,6 @@ func (c *Context) Get(key string) (value interface{}, exists bool) {
 
 func (c *Context) MustGet(key string) interface{} {
 	return c.values[key]
-}
-
-func (c *Context) Copy(from *Context) *Context {
-	if c.values == nil {
-		c.values = make(map[string]interface{})
-	}
-	for k, v := range from.values {
-		c.values[k] = v
-	}
-	return c
 }
 
 func (c *Context) GetString(key string) (s string) {
