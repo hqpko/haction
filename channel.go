@@ -1,12 +1,19 @@
 package haction
 
 import (
+	"log"
+
 	"github.com/hqpko/hchannel"
 )
 
+var defUnknownProtocolHandler = func(pid int32) {
+	log.Printf("unknown protocol id: %d", pid)
+}
+
 type Channel struct {
-	engine      *Engine
-	mainChannel *hchannel.Channel
+	engine                 *Engine
+	mainChannel            *hchannel.Channel
+	handlerUnknownProtocol func(pid int32)
 }
 
 func NewChannel() *Channel {
@@ -14,8 +21,13 @@ func NewChannel() *Channel {
 }
 
 func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
-	c := &Channel{engine: NewEngine()}
+	c := &Channel{engine: NewEngine(), handlerUnknownProtocol: defUnknownProtocolHandler}
 	c.mainChannel = hchannel.NewChannelMulti(channelSize, goroutineCount, c.doAction)
+	return c
+}
+
+func (c *Channel) SetUnknownProtocolHandler(handler func(pid int32)) *Channel {
+	c.handlerUnknownProtocol = handler
 	return c
 }
 
@@ -34,7 +46,11 @@ func (c *Channel) Input(pid int32, values Values) bool {
 
 func (c *Channel) doAction(i interface{}) {
 	if ctx, ok := i.(*Context); ok {
-		ctx.do()
+		if ctx.handlers == nil {
+			c.handlerUnknownProtocol(ctx.id)
+		} else {
+			ctx.do()
+		}
 	}
 }
 
