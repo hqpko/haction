@@ -23,9 +23,7 @@ func (c *Context) Abort() {
 
 func (c *Context) Next() {
 	c.index++
-	if c.index < len(c.handlers) {
-		c.handlers[c.index](c)
-	}
+	c.do()
 }
 
 func (c *Context) do() {
