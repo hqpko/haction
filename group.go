@@ -18,11 +18,17 @@ func newGroup(root *Engine, middlewares ...HandleAction) *group {
 }
 
 func (g *group) Group(middlewares ...HandleAction) IGroup {
-	return newGroup(g.root, append(g.middlewares, middlewares...)...)
+	handlers := make([]HandleAction, 0, len(g.middlewares)+len(middlewares))
+	handlers = append(handlers, g.middlewares...)
+	handlers = append(handlers, middlewares...)
+	return newGroup(g.root, handlers...)
 }
 
 func (g *group) Register(id int32, handler HandleAction) IGroup {
-	g.root.register(id, append(g.middlewares, handler))
+	handlers := make([]HandleAction, 0, len(g.middlewares)+1)
+	handlers = append(handlers, g.middlewares...)
+	handlers = append(handlers, handler)
+	g.root.register(id, handlers)
 	return g
 }
 
