@@ -11,6 +11,7 @@ type IGroup interface {
 type group struct {
 	root        *Engine
 	middlewares []HandleAction
+	subs        []*group
 }
 
 func newGroup(root *Engine, middlewares ...HandleAction) *group {
@@ -21,7 +22,9 @@ func (g *group) Group(middlewares ...HandleAction) IGroup {
 	handlers := make([]HandleAction, 0, len(g.middlewares)+len(middlewares))
 	handlers = append(handlers, g.middlewares...)
 	handlers = append(handlers, middlewares...)
-	return newGroup(g.root, handlers...)
+	sub := newGroup(g.root, handlers...)
+	g.subs = append(g.subs, sub)
+	return sub
 }
 
 func (g *group) Register(id int32, handler HandleAction) IGroup {
@@ -35,4 +38,12 @@ func (g *group) Register(id int32, handler HandleAction) IGroup {
 func (g *group) Use(handlers ...HandleAction) IGroup {
 	g.middlewares = append(g.middlewares, handlers...)
 	return g
+}
+
+func (g *group) clean() {
+	for _, sub := range g.subs {
+		sub.clean()
+	}
+	g.subs = nil
+	g.middlewares = nil
 }

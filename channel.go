@@ -56,4 +56,8 @@ func (c *Channel) doAction(i interface{}) {
 
 func (c *Channel) Stop() {
 	c.mainChannel.Close()
+	c.engine.clean()
+	c.engine = nil
+	c.mainChannel = nil
+	c.handlerUnknownProtocol = nil
 }

@@ -33,3 +33,12 @@ func (e *Engine) getHandler(id int32) []HandleAction {
 	defer e.lock.RUnlock()
 	return e.handlers[id]
 }
+
+func (e *Engine) clean() {
+	for id := range e.handlers {
+		delete(e.handlers, id)
+	}
+	e.group.clean()
+	e.group = nil
+	e.handlers = nil
+}
