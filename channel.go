@@ -45,13 +45,17 @@ func (c *Channel) Input(pid int32, values Values) bool {
 }
 
 func (c *Channel) doAction(i interface{}) {
-	if ctx, ok := i.(*Context); ok {
-		if ctx.handlers == nil {
-			c.handlerUnknownProtocol(ctx.id)
-		} else {
-			ctx.do()
-		}
+	ctx, ok := i.(*Context)
+	if !ok {
+		return
 	}
+	if ctx.handlers == nil {
+		c.handlerUnknownProtocol(ctx.id)
+	} else {
+		ctx.do()
+	}
+	ctx.reset()
+	poolContext.Put(ctx)
 }
 
 func (c *Channel) Stop() {

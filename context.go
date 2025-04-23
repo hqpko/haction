@@ -1,10 +1,17 @@
 package haction
 
 import (
+	"sync"
 	"time"
 )
 
 type Values map[string]interface{}
+
+var poolContext = sync.Pool{
+	New: func() interface{} {
+		return new(Context)
+	},
+}
 
 type Context struct {
 	id       int32
@@ -14,7 +21,12 @@ type Context struct {
 }
 
 func newContext(id int32, values Values, handlers []HandleAction) *Context {
-	return &Context{id: id, values: values, handlers: handlers}
+	ctx := poolContext.Get().(*Context)
+	ctx.id = id
+	ctx.index = 0
+	ctx.values = values
+	ctx.handlers = handlers
+	return ctx
 }
 
 func (c *Context) Abort() {
@@ -31,6 +43,10 @@ func (c *Context) do() {
 		c.handlers[c.index](c)
 		c.index++
 	}
+}
+
+func (c *Context) reset() {
+	c.id, c.index, c.values, c.handlers = 0, 0, nil, nil
 }
 
 func (c *Context) Set(key string, value interface{}) *Context {
