@@ -2,6 +2,7 @@ package haction
 
 import (
 	"log"
+	"time"
 
 	"github.com/hqpko/hchannel"
 )
@@ -17,12 +18,12 @@ type Channel struct {
 }
 
 func NewChannel() *Channel {
-	return NewChannelWithOption(1<<10, 1)
+	return NewChannelWithOption(1<<10, 1, 0)
 }
 
-func NewChannelWithOption(channelSize, goroutineCount int) *Channel {
+func NewChannelWithOption(channelSize, goroutineCount int, timerDuration time.Duration) *Channel {
 	c := &Channel{engine: NewEngine(), handlerUnknownProtocol: defUnknownProtocolHandler}
-	c.mainChannel = hchannel.NewChannelMulti(channelSize, goroutineCount, c.doAction)
+	c.mainChannel = hchannel.NewChannelMulti(channelSize, goroutineCount, timerDuration, c.doAction)
 	return c
 }
 
@@ -42,6 +43,10 @@ func (c *Channel) Root() IGroup {
 
 func (c *Channel) Input(pid int32, values Values) bool {
 	return c.mainChannel.Input(c.engine.newContext(pid, values))
+}
+
+func (c *Channel) ResetTimer(d time.Duration) {
+	c.mainChannel.Reset(d)
 }
 
 func (c *Channel) doAction(i interface{}) {
